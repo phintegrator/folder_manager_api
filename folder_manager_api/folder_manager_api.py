@@ -1,16 +1,13 @@
 import os
 import configparser
 import logging
+from logging.handlers import RotatingFileHandler
 from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
 from typing import Optional
 from folder_manager import Folder, FolderError
 import secrets
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 # Read configuration file
 config = configparser.ConfigParser()
@@ -20,6 +17,7 @@ config_file = 'folder_manager_api.config'
 if not os.path.exists(config_file):
     config['server'] = {'port': '8000'}
     config['auth'] = {'username': 'admin', 'password': 'password'}
+    config['logging'] = {'log_size': '1073741824'}
     with open(config_file, 'w') as configfile:
         config.write(configfile)
 
@@ -28,6 +26,14 @@ config.read(config_file)
 port = int(config['server']['port'])
 username = config['auth']['username']
 password = config['auth']['password']
+log_size = int(config['logging'].get('log_size', 1073741824))  # Default to 1GB if not set
+
+# Configure logging
+log_file = "folder_manager_api.log"
+handler = RotatingFileHandler(log_file, maxBytes=log_size, backupCount=10)
+logging.basicConfig(handlers=[handler], level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+logger.addHandler(handler)
 
 # Initialize the FastAPI app with metadata
 app = FastAPI(
