@@ -96,6 +96,10 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(LoggingMiddleware)
 
+@app.get("/")
+def read_root():
+    return {"status": "ok", "message": "Folder Manager API is running"}
+
 @app.post("/create_folder/")
 def create_folder(operation: PathOperation, username: str = Depends(get_current_username)):
     folder = Folder(operation.path)
