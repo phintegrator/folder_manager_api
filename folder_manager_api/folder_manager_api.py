@@ -30,10 +30,15 @@ log_size = int(config['logging'].get('log_size', 1073741824))  # Default to 1GB 
 
 # Configure logging
 log_file = "folder_manager_api.log"
-handler = RotatingFileHandler(log_file, maxBytes=log_size, backupCount=10)
-logging.basicConfig(handlers=[handler], level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-logger.addHandler(handler)
+logger = logging.getLogger("folder_manager_api")
+logger.setLevel(logging.INFO)
+
+# Check if handler is already added to avoid duplicate logs
+if not any(isinstance(h, RotatingFileHandler) for h in logger.handlers):
+    handler = RotatingFileHandler(log_file, maxBytes=log_size, backupCount=10)
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
 
 # Initialize the FastAPI app with metadata
 app = FastAPI(
