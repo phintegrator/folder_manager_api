@@ -2,12 +2,14 @@ import os
 import configparser
 import logging
 from logging.handlers import RotatingFileHandler
-from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi import FastAPI, HTTPException, Depends, Request, Response
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
 from typing import Optional
 from folder_manager import Folder, FolderError
 import secrets
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import JSONResponse, StreamingResponse
 
 # Read configuration file
 config = configparser.ConfigParser()
@@ -71,18 +73,28 @@ class FileOperation(BaseModel):
     path: str
     file_name: str
 
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    logger.info(f"Request: {request.method} {request.url}")
-    if request.method == "POST":
-        try:
-            body = await request.json()
-            logger.info(f"Body: {body}")
-        except Exception as e:
-            logger.info(f"Failed to parse body: {e}")
-    response = await call_next(request)
-    logger.info(f"Response status: {response.status_code}")
-    return response
+class LoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        logger.info(f"Request: {request.method} {request.url}")
+        if request.method in ["POST", "PUT", "PATCH"]:
+            try:
+                body = await request.json()
+                logger.info(f"Request Body: {body}")
+            except Exception as e:
+                logger.info(f"Failed to parse request body: {e}")
+
+        response = await call_next(request)
+
+        response_body = b""
+        async for chunk in response.body_iterator:
+            response_body += chunk
+
+        logger.info(f"Response status: {response.status_code}")
+        logger.info(f"Response Body: {response_body.decode('utf-8')}")
+
+        return StreamingResponse(iter([response_body]), status_code=response.status_code, headers=dict(response.headers))
+
+app.add_middleware(LoggingMiddleware)
 
 @app.post("/create_folder/")
 def create_folder(operation: PathOperation, username: str = Depends(get_current_username)):

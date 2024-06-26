@@ -4,4 +4,5 @@
 build/
 dist/
 folder_manager_api/folder_manager_api.config
+folder_manager_api/folder_manager_api.log
 folder_manager_api.egg-info/
