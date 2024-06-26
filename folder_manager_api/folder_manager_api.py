@@ -10,6 +10,7 @@ from folder_manager import Folder, FolderError
 import secrets
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse, StreamingResponse
+from datetime import datetime, timedelta
 
 # Read configuration file
 config = configparser.ConfigParser()
@@ -48,6 +49,9 @@ app = FastAPI(
     description="This API allows managing folders and files, including creating, listing, counting, and deleting files and folders.",
     version="1.0.0",
 )
+
+# Capture the start time
+start_time = datetime.now()
 
 security = HTTPBasic()
 
@@ -97,8 +101,16 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 app.add_middleware(LoggingMiddleware)
 
 @app.get("/")
-def read_root():
-    return {"status": "ok", "message": "Folder Manager API is running"}
+def health_check():
+    current_time = datetime.now()
+    running_time = current_time - start_time
+    running_since = start_time.strftime("%Y-%m-%d %H:%M:%S")
+    return {
+        "status": "ok",
+        "message": "Folder Manager API is running",
+        "running_since": running_since,
+        "uptime": str(running_time)
+    }
 
 @app.post("/create_folder/")
 def create_folder(operation: PathOperation, username: str = Depends(get_current_username)):
