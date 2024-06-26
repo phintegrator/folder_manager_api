@@ -1,11 +1,16 @@
 import os
 import configparser
-from fastapi import FastAPI, HTTPException, Depends
+import logging
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
 from typing import Optional
 from folder_manager import Folder, FolderError
 import secrets
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Read configuration file
 config = configparser.ConfigParser()
@@ -54,6 +59,19 @@ class PathOperation(BaseModel):
 class FileOperation(BaseModel):
     path: str
     file_name: str
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    logger.info(f"Request: {request.method} {request.url}")
+    if request.method == "POST":
+        try:
+            body = await request.json()
+            logger.info(f"Body: {body}")
+        except Exception as e:
+            logger.info(f"Failed to parse body: {e}")
+    response = await call_next(request)
+    logger.info(f"Response status: {response.status_code}")
+    return response
 
 @app.post("/create_folder/")
 def create_folder(operation: PathOperation, username: str = Depends(get_current_username)):
