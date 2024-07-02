@@ -5,7 +5,7 @@ from logging.handlers import RotatingFileHandler
 from fastapi import FastAPI, HTTPException, Depends, Request, Response
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from folder_manager import Folder, FolderError
 import secrets
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -77,6 +77,10 @@ class FileOperation(BaseModel):
     path: str
     file_name: str
 
+class ExtensionOperation(BaseModel):
+    path: str
+    extension: str
+
 class LoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         logger.info(f"Request: {request.method} {request.url}")
@@ -130,11 +134,29 @@ def list_files(operation: PathOperation, username: str = Depends(get_current_use
     except FolderError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/list_files_with_extension/")
+def list_files_with_extension(operation: ExtensionOperation, username: str = Depends(get_current_username)):
+    folder = Folder(operation.path)
+    try:
+        files = folder.list_files_with_extension(operation.extension)
+        return {"files": files}
+    except FolderError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/count_files/")
 def count_files(operation: PathOperation, username: str = Depends(get_current_username)):
     folder = Folder(operation.path)
     try:
         count = folder.count_files()
+        return {"file_count": count}
+    except FolderError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/count_files_with_extension/")
+def count_files_with_extension(operation: ExtensionOperation, username: str = Depends(get_current_username)):
+    folder = Folder(operation.path)
+    try:
+        count = folder.count_files_with_extension(operation.extension)
         return {"file_count": count}
     except FolderError as e:
         raise HTTPException(status_code=500, detail=str(e))

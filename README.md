@@ -1,250 +1,168 @@
+# Folder Manager API
 
-# Folder Manager
+folder_manager_api is a FastAPI wrapper for the [folder_manager](https://pypi.org/project/folder-manager/) package, providing a RESTful API for managing folders and files.
 
-Folder Manager is a simple Python package for managing folders and files. It provides methods to create folders, list files, count files, create files, delete files, move files, and copy files with optional verbose output.
+## Features:
 
-## Installation
+- Create and delete folders
+- List files in a folder
+- Count files in a folder
+- Create and delete files
+- Check if a folder or file exists
+- List and count files with specific extensions
+- Basic authentication
+- Logging functionality
 
-You can install the package via pip:
+## Installation:
 
-```python
-pip install folder_manager
-```
-
-## Usage
-
-### Importing the Folder class
-
-First, import the `Folder` class from the `folder_manager` package:
-
-```python
-from folder_manager import Folder
-```
-
-### Creating a Folder Instance
-
-Create an instance of the `Folder` class by specifying the folder path and an optional verbose flag:
+You can install folder_manager_api using pip:
 
 ```python
-folder = Folder('C:\\path\\to\\folder', verbose=True)
+pip install folder_manager_api
 ```
 
-### Creating a Folder
+## Usage:
 
-To create the specified folder, use the `create_folder` method:
+To run the API server:
 
 ```python
-if folder.create_folder():
-    print("Folder created successfully.")
-else:
-    print("Failed to create folder.")
+folder_manager_api
+
+or
+
+python -m folder_manager_api
 ```
 
-### Checking if a Folder Exists
+This will start the server on [http://localhost:8000](http://localhost:8000/).
 
-To check if the folder exists, use the `folder_exists` method:
+### API Endpoints and Sample Requests:
 
-```python
-if folder.folder_exists():
-    print("Folder exists.")
-else:
-    print("Folder does not exist.")
+1. GET /: Health check endpoint
+    
+    ```python
+    curl -X GET http://localhost:8000/
+    ```
+    
+2. POST /create_folder/: Create a new folder
+    
+    ```python
+    curl -X POST http://localhost:8000/create_folder/ -H "Content-Type: application/json" -d '{"path": "/path/to/new/folder"}'
+    ```
+    
+3. POST /list_files/: List files in a folder
+    
+    ```python
+    curl -X POST http://localhost:8000/list_files/ -H "Content-Type: application/json" -d '{"path": "/path/to/folder"}'
+    ```
+    
+4. POST /list_files_with_extension/: List files with a specific extension
+    
+    ```python
+    curl -X POST http://localhost:8000/list_files_with_extension/ -H "Content-Type: application/json" -d '{"path": "/path/to/folder", "extension": ".txt"}'
+    ```
+    
+5. POST /count_files/: Count files in a folder
+    
+    ```python
+    curl -X POST http://localhost:8000/count_files/ -H "Content-Type: application/json" -d '{"path": "/path/to/folder"}'
+    ```
+    
+6. POST /count_files_with_extension/: Count files with a specific extension
+    
+    ```python
+    curl -X POST http://localhost:8000/count_files_with_extension/ -H "Content-Type: application/json" -d '{"path": "/path/to/folder", "extension": ".txt"}'
+    ```
+    
+7. POST /create_file/: Create a new file
+    
+    ```python
+    curl -X POST http://localhost:8000/create_file/ -H "Content-Type: application/json" -d '{"path": "/path/to/folder", "file_name": "newfile.txt", "content": "Hello, World!"}'
+    ```
+    
+8. POST /delete_file/: Delete a file
+    
+    ```python
+    curl -X POST http://localhost:8000/delete_file/ -H "Content-Type: application/json" -d '{"path": "/path/to/folder", "file_name": "file_to_delete.txt"}'
+    ```
+    
+9. POST /delete_folder/: Delete a folder
+    
+    ```python
+    curl -X POST http://localhost:8000/delete_folder/ -H "Content-Type: application/json" -d '{"path": "/path/to/folder/to/delete"}'
+    ```
+    
+10. POST /folder_exists/: Check if a folder exists
+    
+    ```python
+    curl -X POST http://localhost:8000/folder_exists/ -H "Content-Type: application/json" -d '{"path": "/path/to/check"}'
+    ```
+    
+11. POST /file_exists/: Check if a file exists
+    
+    ```python
+    curl -X POST http://localhost:8000/file_exists/ -H "Content-Type: application/json" -d '{"path": "/path/to/folder", "file_name": "file_to_check.txt"}'
+    ```
+    
+
+Note: All endpoints require basic authentication. Add -u username:password to your curl commands or use appropriate authentication in your HTTP client.
+
+## Configuration:
+
+The API can be configured using a folder_manager_api.config file. If not present, a default configuration will be created.
+
+Sample configuration file (folder_manager_api.config):
+
+```
+[server]
+port = 8000
+
+[auth]
+username = admin
+password = password
+
+[logging]
+log_size = 1073741824
 ```
 
-### Listing Files in a Folder
+### Configuration details:
 
-To list all files in the folder, use the `list_files` method:
+1. server section:
+    - port: The port number on which the API server will run. Default is 8000.
+2. auth section:
+    - username: The username for basic authentication.
+    - password: The password for basic authentication.
+3. logging section:
+    - log_size: Maximum size of the log file in bytes before it rotates. Default is 1073741824 (1GB).
 
-```python
-files = folder.list_files()
-print(f"Files: {files}")
-```
+You can modify these values to customize the API's behavior. If the configuration file is not present when the API starts, it will create a default one with these values.
 
-### Counting Files in a Folder
+## Logging:
 
-To count the number of files in the folder, use the `count_files` method:
+The API logs all requests and responses to a file named folder_manager_api.log. The log file uses a rotating file handler, which means it will create new log files and archive old ones when the file size limit (specified in log_size) is reached.
 
-```python
-file_count = folder.count_files()
-print(f"Number of files: {file_count}")
-```
+## Dependencies:
 
-### Creating a File
+- fastapi
+- uvicorn
+- pydantic
+- folder_manager
 
-To create a file in the folder, use the `create_file` method:
+## License:
 
-```python
-if folder.create_file('example.txt', 'Hello, world!'):
-    print("File created successfully.")
-else:
-    print("Failed to create file.")
-```
+This project is licensed under the MIT License.
 
-### Deleting a File
-
-To delete a file from the folder, use the `delete_file` method:
-
-```python
-if folder.delete_file('example.txt'):
-    print("File deleted successfully.")
-else:
-    print("Failed to delete file.")
-```
-
-### Moving a File
-
-To move a file within the file system, use the `move_file` method:
-
-```python
-if folder.move_file('C:\\path\\to\\folder\\example.txt', 'C:\\new\\path\\example.txt'):
-    print("File moved successfully.")
-else:
-    print("Failed to move file.")
-```
-
-### Copying a File
-
-To copy a file within the file system, use the `copy_file` method:
-
-```python
-if folder.copy_file('C:\\path\\to\\folder\\example.txt', 'C:\\new\\path\\example.txt'):
-    print("File copied successfully.")
-else:
-    print("Failed to copy file.")
-```
-
-### Deleting a Folder
-
-To delete the folder and all its contents, use the `delete_folder` method:
-
-```python
-if folder.delete_folder():
-    print("Folder deleted successfully.")
-else:
-    print("Failed to delete folder.")
-```
-
-## CLI Usage
-
-You can also use the Folder Manager via the command line:
-
-```bash
-# Create a folder
-folder-manager create_folder "C:\path\to\folder"
-
-# Check if a folder exists
-folder-manager folder_exists "C:\path\to\folder"
-
-# List files in a folder
-folder-manager list_files "C:\path\to\folder"
-
-# Count files in a folder
-folder-manager count_files "C:\path\to\folder"
-
-# Create a file in a folder
-folder-manager create_file "C:\path\to\folder" --file_name example.txt --content "Hello, world!"
-
-# Delete a file from a folder
-folder-manager delete_file "C:\path\to\folder" --file_name example.txt
-
-# Move a file
-folder-manager move_file "C:\path\to\folder" --file_name example.txt --dest "C:\new\path\example.txt"
-
-# Copy a file
-folder-manager copy_file "C:\path\to\folder" --file_name example.txt --dest "C:\new\path\example.txt"
-
-# Delete a folder
-folder-manager delete_folder "C:\path\to\folder"
-```
-
-## Example Script
-
-Here is a complete example script demonstrating how to use the `Folder` class:
-
-```python
-from folder_manager import Folder
-
-def main():
-    # Create an instance of Folder with verbose=True to enable printing
-    folder = Folder('C:\\path\\to\\folder', verbose=True)
-
-    # Create a folder
-    if folder.create_folder():
-        print("Folder created successfully.")
-    else:
-        print("Failed to create folder.")
-
-    # Check if the folder exists
-    if folder.folder_exists():
-        print("Folder exists.")
-    else:
-        print("Folder does not exist.")
-
-    # List files in the folder
-    files = folder.list_files()
-    print(f"Files: {files}")
-
-    # Count files in the folder
-    file_count = folder.count_files()
-    print(f"Number of files: {file_count}")
-
-    # Create a new file in the folder
-    if folder.create_file('example.txt', 'Hello, world!'):
-        print("File created successfully.")
-    else:
-        print("Failed to create file.")
-
-    # List files again to see the new file
-    files = folder.list_files()
-    print(f"Files after creation: {files}")
-
-    # Delete the file
-    if folder.delete_file('example.txt'):
-        print("File deleted successfully.")
-    else:
-        print("Failed to delete file.")
-
-    # List files again to confirm deletion
-    files = folder.list_files()
-    print(f"Files after deletion: {files}")
-
-    # Delete the folder and its contents
-    if folder.delete_folder():
-        print("Folder deleted successfully.")
-    else:
-        print("Failed to delete folder.")
-
-    # Create another instance of Folder with verbose=False to disable printing
-    folder_silent = Folder('C:\\path\\to\\folder', verbose=False)
-
-    # Create a folder silently (no print output)
-    if folder_silent.create_folder():
-        print("Folder created successfully (silent).")
-    else:
-        print("Failed to create folder (silent).")
-
-    # Check if the folder exists silently (no print output)
-    if folder_silent.folder_exists():
-        print("Folder exists (silent).")
-    else:
-        print("Folder does not exist (silent).")
-
-if __name__ == "__main__":
-    main()
-```
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
-
-## Author
+## Author:
 
 [Javer Valino](https://github.com/phintegrator)
 
-## Acknowledgements
+## Links:
 
-- Python's `os`, `shutil` and `argparse` libraries
+GitHub: https://github.com/phintegrator/folder_manager_api
+
+## Contributing:
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Support:
+
+If you encounter any problems or have any questions, please open an issue on the GitHub repository.

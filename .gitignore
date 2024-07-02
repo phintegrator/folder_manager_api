@@ -1,5 +1,6 @@
 # Files
-
+folder_manager_api.config
+folder_manager_api.log
 # Folder
 build/
 dist/
