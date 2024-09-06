@@ -11,6 +11,7 @@ import secrets
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse, StreamingResponse
 from datetime import datetime, timedelta
+from fastapi.middleware.cors import CORSMiddleware
 
 # Read configuration file
 config = configparser.ConfigParser()
@@ -103,6 +104,15 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         return StreamingResponse(iter([response_body]), status_code=response.status_code, headers=dict(response.headers))
 
 app.add_middleware(LoggingMiddleware)
+
+# Add CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
 
 @app.get("/")
 def health_check():

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="folder_manager_api",
-    version="1.0.0",
+    version="1.0.1",
     description="A FastAPI wrapper for the folder_manager package, providing a RESTful API for managing folders and files.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
@@ -11,6 +11,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "fastapi",
+        "fastapi-cors",
         "uvicorn",
         "pydantic",
         "folder_manager",
